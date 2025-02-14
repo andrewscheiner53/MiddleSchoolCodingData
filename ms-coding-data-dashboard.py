@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded")
 
 #Title test
-st.write('Middle School Coding Data Dashboard')
+st.title('Middle School Coding Data Dashboard')
 
 alt.themes.enable("dark")
 
@@ -21,18 +21,19 @@ alt.themes.enable("dark")
 excel_file_path = 'MiddleSchoolData.xlsx'
 xl = pd.ExcelFile(excel_file_path)
 
-# List all sheet names
-st.write(xl.sheet_names)
-
-# Read a specific sheet into a DataFrame
-#df_sheet1 = pd.read_excel(excel_file_path, sheet_name='Sheet1')
-
 # If you want to read all sheets into a dictionary of DataFrames
 dfs = {sheet_name: xl.parse(sheet_name) for sheet_name in xl.sheet_names}
 
-#EDA for most recent access data
-mostRecentAccessData = dfs['Most Recent Access Data']
-st.write(mostRecentAccessData.describe())
+#user chooses which data to see
+data_option = st.selectbox(
+    "Which data scope would you like to see?",
+    (xl.sheet_names)
+)
+st.write("You selected:", data_option)
+
+#EDA for selected data
+selected_data = dfs[data_option]
+st.dataframe(selected_data.describe())
 
 #choropleth map fx
 def make_choropleth(input_df, input_id, input_column, input_color_theme):
@@ -50,7 +51,7 @@ def make_choropleth(input_df, input_id, input_column, input_color_theme):
     )
     return choropleth
 
-chorop1 = make_choropleth(mostRecentAccessData, mostRecentAccessData['State'],\
-                mostRecentAccessData['Percent of Schools that Provided Data'],\
+chorop1 = make_choropleth(selected_data, selected_data['State'],\
+                selected_data['Percent of Schools that Provided Data'],\
                     'greens')
 st.plotly_chart(chorop1, use_container_width=True)
