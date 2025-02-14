@@ -26,13 +26,24 @@ dfs = {sheet_name: xl.parse(sheet_name) for sheet_name in xl.sheet_names}
 
 #user chooses which data to see
 data_option = st.selectbox(
-    "Which data scope would you like to see?",
+    "Which data topic would you like to see?",
     (xl.sheet_names)
 )
 st.write("You selected:", data_option)
 
-#EDA for selected data
+#df for selected data
 selected_data = dfs[data_option]
+#get columns, remove state
+selected_data_cols = selected_data.columns[1:]
+
+#column option per df
+col_option = st.selectbox(
+    f"Which data for {data_option} would you like to see?",
+    (selected_data_cols)
+)
+st.write("You selected:", col_option)
+
+#EDA for selected data
 st.dataframe(selected_data.describe())
 
 #choropleth map fx
@@ -52,6 +63,6 @@ def make_choropleth(input_df, input_id, input_column, input_color_theme):
     return choropleth
 
 chorop1 = make_choropleth(selected_data, selected_data['State'],\
-                selected_data['Percent of Schools that Provided Data'],\
+                selected_data[col_option],\
                     'greens')
 st.plotly_chart(chorop1, use_container_width=True)
