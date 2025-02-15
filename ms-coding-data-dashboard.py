@@ -24,6 +24,9 @@ xl = pd.ExcelFile(excel_file_path)
 # If you want to read all sheets into a dictionary of DataFrames
 dfs = {sheet_name: xl.parse(sheet_name) for sheet_name in xl.sheet_names}
 
+#store data on state and year its data was collected
+yearData = dfs['Most Recent Access Data'][['State','School Year']]
+
 #user chooses which data to see
 data_option = st.selectbox(
     "Which data topic would you like to see?",
@@ -31,26 +34,42 @@ data_option = st.selectbox(
 )
 st.write("You selected:", data_option)
 
+#replace "-" with 0s
+selected_data = dfs[data_option].replace("-", 0)
+
 #df for selected data
-selected_data = dfs[data_option]
+selected_data_pct = selected_data.copy()
+selected_data_tot = selected_data.copy()
+#keep only state and pct
+selected_data_pct = selected_data_pct.filter(regex='^(Percent|State)')
+#keep only state and totals
+selected_data_tot = selected_data_tot.filter(regex='^(State|Total|Number)')
 #get columns, remove state
-selected_data_cols = selected_data.columns[1:]
+selected_data_pct_cols = selected_data_pct.columns[1:]
+
+#EDA for selected data
+# Create two columns
+col1, col2 = st.columns(2)
+# Display dataframes in separate columns
+with col1:
+    st.subheader('Summary of Percentage Data')
+    st.dataframe(selected_data_pct.describe())
+with col2:
+    st.subheader('Summary of Totals Data')
+    st.dataframe(selected_data_tot.describe())
 
 #column option per df
 col_option = st.selectbox(
-    f"Which data for {data_option} would you like to see?",
-    (selected_data_cols)
+    f"Which data for {data_option} would you like to see plotted on the map?",
+    (selected_data_pct.columns[1:])
 )
 st.write("You selected:", col_option)
-
-#EDA for selected data
-st.dataframe(selected_data.describe())
 
 #choropleth map fx
 def make_choropleth(input_df, input_id, input_column, input_color_theme):
     choropleth = px.choropleth(input_df, locations=input_id, color=input_column, locationmode="USA-states",
                                color_continuous_scale=input_color_theme,
-                               range_color=(0, 1),
+                               range_color=(input_column.min(), input_column.max()),
                                scope="usa"
                               )
     choropleth.update_layout(
@@ -62,7 +81,14 @@ def make_choropleth(input_df, input_id, input_column, input_color_theme):
     )
     return choropleth
 
-chorop1 = make_choropleth(selected_data, selected_data['State'],\
-                selected_data[col_option],\
+chorop1 = make_choropleth(selected_data_pct, selected_data_pct['State'],\
+                selected_data_pct[col_option],\
                     'greens')
-st.plotly_chart(chorop1, use_container_width=True)
+
+col3, col4 = st.columns([1,2.5])
+with col3:
+    st.subheader('Year Each State Collected Their Data')
+    st.dataframe(yearData)
+with col4:
+    st.subheader('USA Map of Selected Data')
+    st.plotly_chart(chorop1, use_container_width=True)
