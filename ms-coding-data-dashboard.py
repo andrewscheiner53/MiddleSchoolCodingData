@@ -6,13 +6,20 @@ import plotly.express as px
 
 #Set page config (only once, first command)
 st.set_page_config(
-    page_title="Middle School Coding Data Dashboard",
+    page_title="Middle School Participation in CS",
     page_icon=":school:",
     layout="wide",
     initial_sidebar_state="expanded")
 
 #Title test
-st.title('Middle School Coding Data Dashboard')
+st.title('Middle School Participation in CS Data Dashboard')
+st.write('An interactive Streamlit dashboard visualizing \
+          recent trends in both participation and access data across \
+          related to middle school computer science education in the \
+          United States. Collected from Code.org, this dashboard shows \
+         exploratory data analysis amongst demographics across the country \
+         with the choropleth map helping highlight important findings in \
+            the data. Designed by Andrew Scheiner.')
 
 alt.themes.enable("dark")
 
@@ -79,6 +86,9 @@ def make_choropleth(input_df, input_id, input_column, input_color_theme):
         margin=dict(l=0, r=0, t=0, b=0),
         height=350
     )
+    choropleth.update_layout(coloraxis_colorbar=dict(
+        title="Percentage [0,1]"
+    ))
     return choropleth
 
 chorop1 = make_choropleth(selected_data_pct, selected_data_pct['State'],\
@@ -92,3 +102,5 @@ with col3:
 with col4:
     st.subheader('USA Map of Selected Data')
     st.plotly_chart(chorop1, use_container_width=True)
+
+st.write("© Andrew Scheiner 2025")
