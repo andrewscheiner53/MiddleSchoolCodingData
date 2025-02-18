@@ -87,7 +87,7 @@ def make_choropleth(input_df, input_id, input_column, input_color_theme):
         height=350
     )
     choropleth.update_layout(coloraxis_colorbar=dict(
-        title="Percentage [0,1]"
+        title="Percent (ex: 0.4=40%)"
     ))
     return choropleth
 
